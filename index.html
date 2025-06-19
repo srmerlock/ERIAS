@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ERIAS</title>
+<style>
+  @font-face {
+    font-family: 'OPTIPapongLight';
+    src: url('/res/OPTIPapong-Light.ttf') format('truetype');
+  }
+
+  body {
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: default;
+    font-family: 'OPTIPapongLight', sans-serif;
+  }
+
+  /* === Rectangle container === */
+  #rectangle {
+    background: rgba(77, 166, 255, 0.2);
+    border: 1px solid #4da6ff;
+    border-radius: 10px;
+    width: 0;
+    height: 1px;
+    max-width: 20vw;
+    max-height: 30vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: width 0.3s ease, height 0.3s ease, opacity 0.5s ease;
+  }
+
+  /* Notification bar */
+  #notification-bar {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    z-index: 10;
+    user-select: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    color: #4da6ff;
+  }
+
+  #notification-bar.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #info-box {
+    border: 1px solid #4da6ff;
+    color: #4da6ff;
+    font-size: 1.8rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: normal;
+    user-select: none;
+  }
+
+  #inner-info-box {
+    border: 1px solid #4da6ff;
+    color: #4da6ff;
+    font-size: 1.8rem;
+    width: 35px;
+    height: 35px;
+    border-radius: 900px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: normal;
+    user-select: none;
+  }
+
+  #notification-text-box {
+    border: 1px solid #4da6ff;
+    color: #4da6ff;
+    font-size: 1.8rem;
+    padding: 0 18px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Middle container for congrats text */
+  #middle-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    user-select: none;
+  }
+
+  /* Congrats text style */
+  #congrats {
+    position: absolute;
+    top: 40%;
+    color: #4da6ff;
+    font-size: 1.5rem;
+    font-family: Arial, Helvetica, sans-serif;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    text-align: center;
+  }
+
+  #congrats.visible {
+    opacity: 1;
+  }
+
+  /* Start button pinned to bottom */
+  #start-btn {
+    background: white;
+    border: none;
+    color: #3e108a;
+    font-size: 1.2rem;
+    padding: 10px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+    margin-bottom: 20px;
+    align-self: center;
+  }
+
+  #start-btn.visible {
+    opacity: 1;
+  }
+
+  /* Word animation container */
+  #word {
+    display: flex;
+    gap: 0.3em;
+    z-index: 1;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    visibility: hidden;
+    font-family: 'OPTIPapongLight', sans-serif;
+    font-size: 8vw;
+    color: white;
+    opacity: 0;
+    user-select: none;
+  }
+
+  /* Adjusted vertical slide down */
+  #word.moved {
+    transform: translate(-50%, 25vh) scale(0.5);
+  }
+
+  #word.final-slide {
+    transform: translate(-50%, 35vh) scale(0.3) !important;
+  }
+
+  #word.final-slide-2 {
+    transform: translate(-50%, 35vh) scale(0.25) !important; /* adjusted */
+  }
+
+  .letter {
+    opacity: 1;
+    transition: opacity 0.6s ease, color 1s ease;
+  }
+
+  .hidden {
+    opacity: 0;
+  }
+
+  .with-shadow {
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  }
+
+  .glow-pulse {
+    animation: glowPulse 2.5s infinite alternate ease-in-out;
+  }
+
+  @keyframes glowPulse {
+    0% {
+      text-shadow:
+        0 0 5px #3e108a,
+        0 0 10px #3e108a,
+        0 0 15px #3e108a,
+        0 0 20px #6a3fc1,
+        0 0 30px #6a3fc1;
+      color: #3e108a;
+    }
+    100% {
+      text-shadow:
+        0 0 15px #8a4fe0,
+        0 0 25px #8a4fe0,
+        0 0 35px #b374ff,
+        0 0 45px #b374ff,
+        0 0 60px #d9baff;
+      color: #6a3fc1;
+    }
+  }
+
+  /* Video container & glitch effect styles */
+  #video-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    max-width: 100vw;
+    height: auto;
+    overflow: visible;
+    z-index: -1;
+  }
+
+  #bg-video {
+    width: 100vw;
+    height: auto;
+    opacity: 0;
+    transition: opacity 1s ease;
+    display: block;
+    position: relative;
+  }
+  #bg-video.visible {
+    opacity: 1;
+  }
+
+  #bg-video2 {
+    width: 100vw;
+    height: auto;
+    opacity: 0.2;
+    transition: opacity 1s ease;
+    display: block;
+    position: relative;
+    filter: hue-rotate(160deg);
+  }
+  #bg-video2.hidden {
+    opacity: 0;
+  }
+
+  /* Normal glitch animation (1s) */
+  #bg-video.glitch {
+    position: relative;
+    animation: glitch-anim 1s linear forwards;
+  }
+
+  /* Fast glitch animation (0.3s) */
+  #bg-video.glitch-fast {
+    position: relative;
+    animation: glitch-fast-anim 0.3s linear forwards;
+  }
+
+  #bg-video.glitch::before,
+  #bg-video.glitch::after,
+  #bg-video.glitch-fast::before,
+  #bg-video.glitch-fast::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: inherit;
+    background-size: cover;
+    background-position: center;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  /* Red channel shifted left */
+  #bg-video.glitch::before,
+  #bg-video.glitch-fast::before {
+    left: -3px;
+    clip-path: inset(0 33% 0 0);
+    background-color: rgba(255, 0, 0, 0.7);
+  }
+  /* Blue channel shifted right */
+  #bg-video.glitch::after,
+  #bg-video.glitch-fast::after {
+    left: 3px;
+    clip-path: inset(0 0 0 33%);
+    background-color: rgba(0, 0, 255, 0.7);
+  }
+
+  /* Normal glitch animations */
+  @keyframes glitch-anim {
+    0%, 100% {
+      filter: none;
+      transform: translate(0);
+      clip-path: inset(0);
+    }
+    20% {
+      filter: brightness(1.2) contrast(1.5);
+      transform: translate(-5px, 0);
+      clip-path: inset(20% 0 80% 0);
+    }
+    40% {
+      filter: brightness(0.8) contrast(1);
+      transform: translate(5px, 0);
+      clip-path: inset(10% 0 90% 0);
+    }
+    60% {
+      filter: brightness(1.1) contrast(1.3);
+      transform: translate(-3px, 0);
+      clip-path: inset(50% 0 40% 0);
+    }
+    80% {
+      filter: brightness(0.9) contrast(0.9);
+      transform: translate(3px, 0);
+      clip-path: inset(60% 0 30% 0);
+    }
+  }
+
+  @keyframes glitch-red {
+    0%, 100% {
+      clip-path: inset(0);
+      transform: translate(0);
+      opacity: 1;
+    }
+    25% {
+      clip-path: inset(10% 0 85% 0);
+      transform: translate(-6px, 0);
+      opacity: 0.8;
+    }
+    50% {
+      clip-path: inset(40% 0 30% 0);
+      transform: translate(2px, 0);
+      opacity: 0.6;
+    }
+    75% {
+      clip-path: inset(5% 0 90% 0);
+      transform: translate(-3px, 0);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes glitch-blue {
+    0%, 100% {
+      clip-path: inset(0);
+      transform: translate(0);
+      opacity: 1;
+    }
+    25% {
+      clip-path: inset(20% 0 70% 0);
+      transform: translate(4px, 0);
+      opacity: 0.7;
+    }
+    50% {
+      clip-path: inset(30% 0 50% 0);
+      transform: translate(-2px, 0);
+      opacity: 0.5;
+    }
+    75% {
+      clip-path: inset(15% 0 80% 0);
+      transform: translate(3px, 0);
+      opacity: 0.7;
+    }
+  }
+
+  /* Fast glitch animations */
+  @keyframes glitch-fast-anim {
+    0%, 100% {
+      filter: none;
+      transform: translate(0);
+      clip-path: inset(0);
+    }
+    50% {
+      filter: brightness(1.5) contrast(1.7);
+      transform: translate(-6px, 0);
+      clip-path: inset(20% 0 80% 0);
+    }
+  }
+  @keyframes glitch-fast-red {
+    0%, 100% {
+      clip-path: inset(0);
+      transform: translate(0);
+      opacity: 1;
+    }
+    50% {
+      clip-path: inset(10% 0 85% 0);
+      transform: translate(-8px, 0);
+      opacity: 0.8;
+    }
+  }
+  @keyframes glitch-fast-blue {
+    0%, 100% {
+      clip-path: inset(0);
+      transform: translate(0);
+      opacity: 1;
+    }
+    50% {
+      clip-path: inset(20% 0 70% 0);
+      transform: translate(6px, 0);
+      opacity: 0.7;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div id="video-container" aria-hidden="false">
+    <video id="bg-video2" src="/res/menu.mp4" muted loop playsinline></video>
+  </div>
+
+  <div id="video-container" aria-hidden="true">
+    <video id="bg-video" src="/res/bg.mp4" muted loop playsinline></video>
+  </div>
+
+  <div id="word" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="rectangle" role="region" aria-label="Information rectangle">
+    <div id="notification-bar" aria-live="polite" aria-atomic="true" aria-relevant="additions removals">
+      <div id="info-box">
+        <div id="inner-info-box" aria-label="Information symbol">!</div>
+      </div>
+      <div id="notification-text-box">NOTIFICATION</div>
+    </div>
+    <div id="middle-container">
+      <div id="congrats">Congratulations on becoming a <b>PLAYER</b></div>
+    </div>
+    <button id="start-btn" aria-label="Start animation">Start</button>
+  </div>
+
+  <audio id="sound" src="/res/arise.mp3"></audio>
+  <audio id="bg-music" src="/res/song.mp3"></audio>
+  <audio id="popup-sound" src="/res/popup.mp3"></audio>
+
+<script>
+  const fromWord = 'ERIAS';
+  const toWord = 'ARISE';
+  const finalWord = '@7dsleaks';
+
+  const wordContainer = document.getElementById('word');
+  const menu = document.getElementById('bg-video2')
+  const video = document.getElementById('bg-video');
+  const sound = document.getElementById('sound');
+  const bgMusic = document.getElementById('bg-music');
+
+  const rectangle = document.getElementById('rectangle');
+  const notificationBar = document.getElementById('notification-bar');
+  const congratsText = document.getElementById('congrats');
+  const startBtn = document.getElementById('start-btn');
+
+  let started = false;
+  menu.play()
+
+  function createLetters(word) {
+    wordContainer.innerHTML = '';
+    word.split('').forEach(char => {
+      const span = document.createElement('span');
+      span.className = 'letter hidden';
+      span.innerText = char;
+      wordContainer.appendChild(span);
+    });
+  }
+
+  // Fade letters in one by one before morph
+  function fadeInLetters(callback) {
+    const spans = wordContainer.querySelectorAll('.letter');
+    spans.forEach((span, i) => {
+      setTimeout(() => {
+        span.classList.remove('hidden');
+        if (i === spans.length - 1 && callback) {
+          setTimeout(callback, 400); // small delay before morphing
+        }
+      }, i * 150);
+    });
+  }
+
+  function morphLetters(oldWord, newWord, onComplete) {
+    const maxLength = Math.max(oldWord.length, newWord.length);
+    const newLetters = newWord.padEnd(maxLength).split('');
+    const spans = wordContainer.querySelectorAll('.letter');
+
+    spans.forEach(span => span.classList.add('hidden'));
+
+    const fadeOutDuration = 700;
+    const totalFadeInTarget = 1300;
+    const fadeInDelay = totalFadeInTarget / spans.length;
+
+    setTimeout(() => {
+      sound.currentTime = 0;
+      sound.play();
+
+      spans.forEach((span, index) => {
+        span.innerText = newLetters[index] === ' ' ? '' : newLetters[index];
+        setTimeout(() => {
+          span.classList.remove('hidden');
+        }, index * fadeInDelay);
+      });
+
+      const targetR = 62;
+      const targetG = 16;
+      const targetB = 138;
+
+      const colorShiftDuration = (spans.length - 1) * fadeInDelay + fadeInDelay;
+      const startTime = Date.now();
+
+      const colorInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / colorShiftDuration, 1);
+
+        const r = Math.round(255 * (1 - progress) + targetR * progress);
+        const g = Math.round(255 * (1 - progress) + targetG * progress);
+        const b = Math.round(255 * (1 - progress) + targetB * progress);
+        const color = `rgb(${r}, ${g}, ${b})`;
+
+        spans.forEach(s => {
+          s.style.color = color;
+        });
+
+        if (progress >= 1) {
+          clearInterval(colorInterval);
+
+          bgMusic.volume = 0.7;
+          bgMusic.play().catch(e => {
+            console.log('Background music playback prevented:', e);
+          });
+
+          // Start glitch + video fade in 0.4s AFTER music starts
+          setTimeout(() => {
+            video.classList.add('glitch');
+            video.classList.add('visible');
+            video.play();
+
+            setTimeout(() => {
+              video.classList.remove('glitch');
+              video.classList.add('glitch-fast');
+
+              setTimeout(() => {
+                video.classList.remove('glitch-fast');
+              }, 300);
+            }, 1000);
+          }, 400);
+
+          if (onComplete) {
+            setTimeout(onComplete, 100);
+          }
+        }
+      }, 16);
+
+    }, fadeOutDuration);
+  }
+
+  function moveAndChangeText(newText) {
+    wordContainer.classList.add('moved');
+
+    setTimeout(() => {
+      const spans = wordContainer.querySelectorAll('.letter');
+      spans.forEach(s => s.classList.add('hidden'));
+
+      const fadeOutDuration = 500;
+
+      setTimeout(() => {
+        createLetters(newText);
+
+        const newSpans = wordContainer.querySelectorAll('.letter');
+        newSpans.forEach(s => {
+          s.classList.add('hidden');
+          s.classList.add('with-shadow');
+          s.classList.add('glow-pulse');
+        });
+
+        setTimeout(() => {
+          newSpans.forEach((s, i) => {
+            setTimeout(() => {
+              s.classList.remove('hidden');
+            }, i * 100);
+          });
+        }, 100);
+      }, fadeOutDuration);
+    }, 500);
+  }
+
+  // Slide down and shrink @7dsleaks after delay
+  function slideDownAndShrink() {
+  setTimeout(() => {
+    wordContainer.classList.add('final-slide');
+  }, 1000);
+  setTimeout(() => {
+    wordContainer.classList.add('final-slide-2');
+  }, 1800);
+}
+
+  function startSequence() {
+    if (started) return;
+    started = true;
+
+    // Hide rectangle UI
+    notificationBar.classList.remove('visible');
+    congratsText.classList.remove('visible');
+    startBtn.classList.remove('visible');
+
+    // Shrink and fade rectangle then show ERIAS and fade in letters
+    animateRectangleShrinkAndFade(() => {
+      createLetters(fromWord);
+      wordContainer.style.visibility = 'visible';
+      wordContainer.style.opacity = '1';
+
+      fadeInLetters(() => {
+        morphLetters(fromWord, toWord, () => {
+          moveAndChangeText(finalWord);
+          slideDownAndShrink();
+        });
+      });
+    });
+  }
+
+  // Animate rectangle expand on page load
+  function animateRectangleExpand() {
+    rectangle.style.opacity = '1';
+    rectangle.style.width = '20vw';
+
+    setTimeout(() => {
+      rectangle.style.height = '30vh';
+    }, 350);
+
+    setTimeout(() => {
+      notificationBar.classList.add('visible');
+      congratsText.classList.add('visible');
+      startBtn.classList.add('visible');
+    }, 1000);
+  }
+
+  // Animate rectangle shrinking vertically then horizontally then fade out
+  function animateRectangleShrinkAndFade(callback) {
+    rectangle.style.height = '1px';
+
+    setTimeout(() => {
+      rectangle.style.width = '0';
+    }, 350);
+
+    setTimeout(() => {
+      rectangle.style.opacity = '0';
+      if (callback) callback();
+    }, 900);
+  }
+
+  startBtn.addEventListener('click', startSequence);
+
+  window.addEventListener('load', () => {
+    setTimeout(animateRectangleExpand, 600);
+  });
+</script>
+
+</body>
+</html>
