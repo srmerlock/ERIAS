@@ -29,10 +29,10 @@
     background: rgba(77, 166, 255, 0.2);
     border: 1px solid #4da6ff;
     border-radius: 10px;
-    width: 0;
-    height: 1px;
-    max-width: 20vw;
-    max-height: 30vh;
+    width: clamp(200px, 30vw, 400px);
+    height: clamp(150px, 35vh, 300px);
+    max-width: 90%;
+    max-height: 90%;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -46,9 +46,9 @@
     position: absolute;
     top: 10px;
     left: 50%;
-    transform: translateX(-50%);
     display: flex;
-    gap: 6px;
+    transform: translateX(-50%);
+    gap: clamp(4px, 0.5vw, 10px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s ease;
@@ -67,9 +67,9 @@
   #info-box {
     border: 1px solid #4da6ff;
     color: #4da6ff;
-    font-size: 1.8rem;
-    width: 36px;
-    height: 36px;
+    width: clamp(30px, 5vw, 36px);
+    height: clamp(30px, 5vw, 36px);
+    font-size: clamp(1rem, 2vw, 1.8rem);
     border-radius: 4px;
     display: flex;
     justify-content: center;
@@ -81,9 +81,9 @@
   #inner-info-box {
     border: 1px solid #4da6ff;
     color: #4da6ff;
-    font-size: 1.8rem;
-    width: 35px;
-    height: 35px;
+    width: clamp(30px, 5vw, 36px);
+    height: clamp(30px, 5vw, 36px);
+    font-size: clamp(1rem, 2vw, 1.8rem);
     border-radius: 900px;
     display: flex;
     justify-content: center;
@@ -95,8 +95,8 @@
   #notification-text-box {
     border: 1px solid #4da6ff;
     color: #4da6ff;
-    font-size: 1.8rem;
-    padding: 0 18px;
+    padding: 0 clamp(10px, 2vw, 18px);
+    font-size: clamp(1rem, 2vw, 1.8rem);
     border-radius: 4px;
     display: flex;
     justify-content: center;
@@ -118,7 +118,7 @@
     position: absolute;
     top: 40%;
     color: #4da6ff;
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2.5vw, 1.8rem);
     font-family: Arial, Helvetica, sans-serif;
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -134,8 +134,8 @@
     background: white;
     border: none;
     color: #3e108a;
-    font-size: 1.2rem;
-    padding: 10px 25px;
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+    padding: clamp(6px, 1vw, 10px) clamp(15px, 2vw, 25px);
     border-radius: 6px;
     cursor: pointer;
     user-select: none;
@@ -162,7 +162,7 @@
     transition: transform 0.5s ease, opacity 0.5s ease;
     visibility: hidden;
     font-family: 'OPTIPapongLight', sans-serif;
-    font-size: 8vw;
+    font-size: clamp(5vw, 10vw, 12vw);
     color: white;
     opacity: 0;
     user-select: none;
@@ -170,15 +170,23 @@
 
   /* Adjusted vertical slide down */
   #word.moved {
-    transform: translate(-50%, 25vh) scale(0.5);
+    transform: translate(-50%, 20vh) scale(0.5);
   }
 
   #word.final-slide {
-    transform: translate(-50%, 35vh) scale(0.3) !important;
+    transform: translate(-50%, 28vh) scale(0.3);
   }
 
   #word.final-slide-2 {
-    transform: translate(-50%, 35vh) scale(0.25) !important; /* adjusted */
+    transform: translate(-50%, 30vh) scale(0.25);
+  }
+
+  #word.final-slide-mob {
+    transform: translate(-50%, 23vh) scale(0.3);
+  }
+
+  #word.final-slide-2-mob {
+    transform: translate(-50%, 25vh) scale(0.25);
   }
 
   .letter {
@@ -221,20 +229,23 @@
 
   /* Video container & glitch effect styles */
   #video-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100vw;
-    max-width: 100vw;
-    height: auto;
-    overflow: visible;
-    z-index: -1;
-  }
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vh;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
 
   #bg-video {
-    width: 100vw;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 16/9;
     opacity: 0;
     transition: opacity 1s ease;
     display: block;
@@ -245,8 +256,10 @@
   }
 
   #bg-video2 {
-    width: 100vw;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 16/9;
     opacity: 0.2;
     transition: opacity 1s ease;
     display: block;
@@ -589,12 +602,21 @@
 
   // Slide down and shrink @7dsleaks after delay
   function slideDownAndShrink() {
-  setTimeout(() => {
-    wordContainer.classList.add('final-slide');
-  }, 1000);
-  setTimeout(() => {
-    wordContainer.classList.add('final-slide-2');
-  }, 1800);
+  if(isMobile) {
+    setTimeout(() => {
+      wordContainer.classList.add('final-slide-mob');
+    }, 1000);
+    setTimeout(() => {
+      wordContainer.classList.add('final-slide-2-mob');
+    }, 1800);
+  } else {
+    setTimeout(() => {
+      wordContainer.classList.add('final-slide');
+    }, 1000);
+    setTimeout(() => {
+      wordContainer.classList.add('final-slide-2');
+    }, 1800);
+  }
 }
 
   function startSequence() {
@@ -621,14 +643,24 @@
     });
   }
 
-  // Animate rectangle expand on page load
+  function isMobile() {
+    return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
   function animateRectangleExpand() {
     rectangle.style.opacity = '1';
-    rectangle.style.width = '20vw';
 
-    setTimeout(() => {
-      rectangle.style.height = '30vh';
-    }, 350);
+    if (isMobile()) {
+      rectangle.style.width = '40vw';
+      setTimeout(() => {
+        rectangle.style.height = '50vh';
+      }, 350);
+    } else {
+      rectangle.style.width = '25vw';
+      setTimeout(() => {
+        rectangle.style.height = '30vh';
+      }, 350);
+    }
 
     setTimeout(() => {
       notificationBar.classList.add('visible');
@@ -637,7 +669,6 @@
     }, 1000);
   }
 
-  // Animate rectangle shrinking vertically then horizontally then fade out
   function animateRectangleShrinkAndFade(callback) {
     rectangle.style.height = '1px';
 
