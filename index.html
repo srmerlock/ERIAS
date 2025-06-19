@@ -7,7 +7,7 @@
 <style>
   @font-face {
     font-family: 'OPTIPapongLight';
-    src: url('/res/OPTIPapong-Light.ttf') format('truetype');
+    src: url('./res/OPTIPapong-Light.ttf') format('truetype');
   }
 
   body {
@@ -415,11 +415,11 @@
 <body>
 
   <div id="video-container" aria-hidden="false">
-    <video id="bg-video2" src="/res/menu.mp4" muted loop playsinline></video>
+    <video id="bg-video2" src="./res/menu.mp4" muted loop playsinline></video>
   </div>
 
   <div id="video-container" aria-hidden="true">
-    <video id="bg-video" src="/res/bg.mp4" muted loop playsinline></video>
+    <video id="bg-video" src="./res/bg.mp4" muted loop playsinline></video>
   </div>
 
   <div id="word" aria-live="polite" aria-atomic="true"></div>
@@ -437,9 +437,8 @@
     <button id="start-btn" aria-label="Start animation">Start</button>
   </div>
 
-  <audio id="sound" src="/res/arise.mp3"></audio>
-  <audio id="bg-music" src="/res/song.mp3"></audio>
-  <audio id="popup-sound" src="/res/popup.mp3"></audio>
+  <audio id="sound" src="./res/arise.mp3"></audio>
+  <audio id="bg-music" src="./res/song.mp3"></audio>
 
 <script>
   const fromWord = 'ERIAS';
